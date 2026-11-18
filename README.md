@@ -96,13 +96,15 @@ npm run e2e:test:release
 1. Ubuntu runner + Node 22 + JDK 17 + Gradle cache, KVM enabled for a fast emulator
 2. Installs the SDK packages the app needs (platform 36, NDK 27.1, CMake 3.31.6)
 3. `npx detox build -c android.emu.release` (JS bundled into the APK, so no Metro)
-4. Boots an API 35 emulator named `Pixel_API_35` ([android-emulator-runner](https://github.com/ReactiveCircus/android-emulator-runner)) and runs `npx detox test -c android.emu.release`
-5. On failure, uploads screenshots, logs and videos as the `detox-artifacts` artifact
+4. Boots an API 35 emulator named `Pixel_API_35` ([android-emulator-runner](https://github.com/ReactiveCircus/android-emulator-runner)), turns off auto-rotate, closes any system dialogs, and runs `npx detox test -c android.emu.release`
+5. On failure, prints which window had focus and uploads screenshots, logs and videos as the `detox-artifacts` artifact
+
+A full run takes about 7 minutes. The emulator runs with `-no-snapshot-save`: without it, saving a quick-boot snapshot on shutdown made the job hang after the tests had already passed.
 
 ## Test design notes (Android + RN 0.84 New Architecture)
 
 - **Fresh app per test:** `device.launchApp({ newInstance: true })` in `beforeEach`. `device.reloadReactNative()` was avoided: in bridgeless mode it returns before the app re-renders, so the next action hits stale views.
-- **Portrait enforced** on every launch (`device.setOrientation('portrait')`). In landscape, Android shows a full-screen keyboard editor that hides the app.
+- **Portrait locked in `AndroidManifest.xml`** (`android:screenOrientation="portrait"`). In landscape, Android shows a full-screen keyboard editor that hides the app. `device.setOrientation()` is avoided: it needs window focus, and on a freshly booted CI emulator a system dialog can hold focus.
 - **Keyboard vs taps:** the soft keyboard is a separate system window that Detox doesn't synchronize with. Tapping Login right after closing the keyboard races its hide animation, so the tap gets lost. The button test uses `replaceText` (no keyboard), and the typing test submits with the ✓ key instead of tapping.
 - No hard sleeps. Async results use `waitFor(...).toBeVisible().withTimeout(...)`.
 
