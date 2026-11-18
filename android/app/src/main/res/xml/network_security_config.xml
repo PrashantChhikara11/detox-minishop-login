@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Detox: allow plain-HTTP (cleartext) traffic to the PC.
+  The app talks to the Detox server and Metro over unencrypted local connections:
+  10.0.2.2 = the emulator's alias for the host PC, localhost = via adb reverse.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+</network-security-config>
