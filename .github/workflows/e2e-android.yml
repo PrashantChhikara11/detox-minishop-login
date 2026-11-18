@@ -68,7 +68,14 @@ jobs:
           force-avd-creation: false
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: npx detox test -c android.emu.release --take-screenshots failing --record-logs failing --record-videos failing
+          # Each line runs separately. Before testing: no auto-rotate, close any system dialogs
+          # (e.g. "System UI isn't responding" after a cold boot) that would steal window focus.
+          # If tests fail, print which window had focus to make CI failures diagnosable from the log.
+          script: |
+            adb shell settings put system accelerometer_rotation 0
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
+            npx detox test -c android.emu.release --take-screenshots failing --record-logs failing --record-videos failing || (echo "=== Window focus at failure ==="; adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'; exit 1)
 
       - name: Upload Detox artifacts (screenshots, logs, videos of failures)
         if: failure()

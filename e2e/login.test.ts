@@ -8,10 +8,10 @@ describe('Login', () => {
     // Fresh app process for every test (back on Login, empty fields).
     // Not device.reloadReactNative(): on RN 0.84 New Architecture (bridgeless) it returns
     // before the app re-renders, so the next action hits the old, discarded views.
+    // (The app is locked to portrait in AndroidManifest.xml. In landscape, Android swaps in
+    // a full-screen keyboard editor that hides the app. We don't call device.setOrientation():
+    // it needs window focus and failed on CI when a system dialog held focus after boot.)
     await device.launchApp({ newInstance: true });
-    // Portrait on every launch: in landscape Android swaps in a full-screen keyboard
-    // editor that hides the app, so typed text never reaches our inputs.
-    await device.setOrientation('portrait');
   });
 
   it('shows the login screen on launch', async () => {
