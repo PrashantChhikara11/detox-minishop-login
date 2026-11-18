@@ -1,6 +1,10 @@
 # MiniShop: Detox E2E Login Demo (Android)
 
+[![E2E (Detox, Android)](https://github.com/PrashantChhikara11/detox-minishop-login/actions/workflows/e2e-android.yml/badge.svg)](https://github.com/PrashantChhikara11/detox-minishop-login/actions/workflows/e2e-android.yml)
+
 A small React Native app with an end-to-end **login test** written in **Detox + TypeScript**.
+
+**See it run without installing anything:** open the [Actions tab](https://github.com/PrashantChhikara11/detox-minishop-login/actions). Every push builds the app and runs the tests on an Android emulator in GitHub's cloud.
 
 | | |
 |---|---|
@@ -84,6 +88,16 @@ Failure screenshots/logs: add `--take-screenshots failing --record-logs failing`
 npm run e2e:build:release
 npm run e2e:test:release
 ```
+
+## CI (GitHub Actions)
+
+`.github/workflows/e2e-android.yml` runs on every push to `main`, on pull requests, and on demand (**Actions → E2E (Detox, Android) → Run workflow**):
+
+1. Ubuntu runner + Node 22 + JDK 17 + Gradle cache, KVM enabled for a fast emulator
+2. Installs the SDK packages the app needs (platform 36, NDK 27.1, CMake 3.31.6)
+3. `npx detox build -c android.emu.release` (JS bundled into the APK, so no Metro)
+4. Boots an API 35 emulator named `Pixel_API_35` ([android-emulator-runner](https://github.com/ReactiveCircus/android-emulator-runner)) and runs `npx detox test -c android.emu.release`
+5. On failure, uploads screenshots, logs and videos as the `detox-artifacts` artifact
 
 ## Test design notes (Android + RN 0.84 New Architecture)
 
